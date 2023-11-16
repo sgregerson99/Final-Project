@@ -1,2 +1,5 @@
 
 #include <Wire.h><br>
+
+DS3231 clock;<br>RTCDateTime dt;
+
