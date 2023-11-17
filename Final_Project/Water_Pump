@@ -1,0 +1,23 @@
+/*
+  IRF520-MOSFET-Driver
+  made on 28 oct 2020
+  by Amir Mohammad Shojaee @ Electropeak
+  Home
+
+*/
+#define PWM 3
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(PWM,OUTPUT);
+  pinMode(PWM, HIGH);
+}
+ 
+ 
+void loop() {
+
+    digitalWrite(PWM,HIGH);
+  delay(5000);
+  digitalWrite(PWM,LOW);
+delay(5000);
+}
