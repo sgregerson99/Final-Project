@@ -41,17 +41,19 @@ void loop() {
   Photo_Resist_Value = analogRead(Photo_Resist_Pin);
   Serial.println(Photo_Resist_Value);
   delay(30);
-  if (Photo_Resist_Value > 500 && pill == 0) { 
-  myStepper.step(stepsPerRevolution); 
-  delay(500);
-
-  // step one revolution in the other direction:
-  myStepper.step(-stepsPerRevolution);
-  delay(500);
-  Serial.println("No pill detected");
-    
-    
+  if (Photo_Resist_Value < 500 ) { 
+    pill = 1;
   }
+  if (pill == 0){
+    myStepper.step(stepsPerRevolution); 
+    delay(500);
+
+   //step one revolution in the other direction:
+    myStepper.step(-stepsPerRevolution);
+    delay(500);
+    Serial.println("No pill detected");
+  }
+  
   if (toggle == 1){ 
     Serial.println("Pill Dispensed, music playing");
     myservo.write(servoangle);
@@ -65,6 +67,7 @@ void loop() {
     digitalWrite(mp3_2, LOW);
     myservo.write(servohome);
     delay(20);
+    pill = 0;
   }
 
   
