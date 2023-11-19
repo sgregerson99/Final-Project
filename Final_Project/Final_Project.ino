@@ -15,6 +15,7 @@ int mp3_1 = 4;
 int mp3_2 = 5;
 int servoangle = 180;
 int servohome = 0;
+bool pill = 0;
 
 void setup() {
   myStepper.setSpeed(15);
@@ -33,30 +34,33 @@ void loop() {
   digitalWrite(LED, HIGH);
   if (pressed() == true) {
    toggle = !toggle;
+   pill = !pill; 
  }
   digitalWrite(mp3_1, HIGH);
   digitalWrite(mp3_2, HIGH);
   Photo_Resist_Value = analogRead(Photo_Resist_Pin);
   Serial.println(Photo_Resist_Value);
   delay(30);
-  if (Photo_Resist_Value > 500) {
+  if (Photo_Resist_Value > 500 && pill == 0) { 
   myStepper.step(stepsPerRevolution); 
   delay(500);
 
   // step one revolution in the other direction:
   myStepper.step(-stepsPerRevolution);
   delay(500);
-   // Serial.println("No pill detected");
+  Serial.println("No pill detected");
     
     
   }
-  if (toggle == 1){
+  if (toggle == 1){ 
+    Serial.println("Pill Dispensed, music playing");
     myservo.write(servoangle);
     digitalWrite(mp3_1, LOW);
     
     delay(20);
   }
   else {
+    Serial.println("System off");
     digitalWrite(mp3_1, HIGH);
     digitalWrite(mp3_2, LOW);
     myservo.write(servohome);
