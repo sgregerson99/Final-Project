@@ -10,6 +10,9 @@ Stepper myStepper(stepsPerRevolution, 8, 10, 9, 11);
 bool previousState = 1;
 bool currentState = 1;
 bool toggle = 0;
+int LED = 12;
+int mp3_1 = 4;
+int mp3_2 = 5;
 
 void setup() {
   myStepper.setSpeed(15);
@@ -18,11 +21,14 @@ void setup() {
   myservo.attach(9);
   pinMode(mp3_1, OUTPUT);
   pinMode(mp3_2, OUTPUT);
+  pinMode(LED, OUTPUT);
+  pinMode(buttonPin, INPUT_PULLUP);
   // put your setup code here, to run once:
 
 }
 
 void loop() {
+  digitalWrite(LED, HIGH);
   if (pressed() == true) {
    toggle = !toggle;
  }
