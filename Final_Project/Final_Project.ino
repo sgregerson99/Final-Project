@@ -34,6 +34,8 @@ void loop() {
   if (pressed() == true) {
    toggle = !toggle;
  }
+  digitalWrite(mp3_1, HIGH);
+  digitalWrite(mp3_2, LOW);
   Photo_Resist_Value = analogRead(Photo_Resist_Pin);
   Serial.println(Photo_Resist_Value);
   delay(30);
