@@ -35,7 +35,7 @@ void loop() {
    toggle = !toggle;
  }
   digitalWrite(mp3_1, HIGH);
-  digitalWrite(mp3_2, LOW);
+  digitalWrite(mp3_2, HIGH);
   Photo_Resist_Value = analogRead(Photo_Resist_Pin);
   Serial.println(Photo_Resist_Value);
   delay(30);
@@ -53,11 +53,14 @@ void loop() {
   if (toggle == 1){
     myservo.write(servoangle);
     digitalWrite(mp3_1, LOW);
+    
     delay(20);
   }
   else {
+    digitalWrite(mp3_1, HIGH);
     digitalWrite(mp3_2, LOW);
     myservo.write(servohome);
+    delay(20);
   }
 
   
