@@ -18,7 +18,7 @@ void setup() {
   myStepper.setSpeed(15);
   pinMode(Photo_Resist_Pin, INPUT);
   Serial.begin(9600);
-  myservo.attach(9);
+  myservo.attach(3);
   pinMode(mp3_1, OUTPUT);
   pinMode(mp3_2, OUTPUT);
   pinMode(LED, OUTPUT);
