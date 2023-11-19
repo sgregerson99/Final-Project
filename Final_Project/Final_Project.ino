@@ -22,22 +22,25 @@ void setup() {
   pinMode(Photo_Resist_Pin, INPUT);
   Serial.begin(9600);
   myservo.attach(3);
-  pinMode(mp3_1, OUTPUT);
-  pinMode(mp3_2, OUTPUT);
+  //pinMode(mp3_1, OUTPUT);
+  //pinMode(mp3_2, OUTPUT);
   pinMode(LED, OUTPUT);
   pinMode(buttonPin, INPUT_PULLUP);
+  myservo.write(servohome);
   // put your setup code here, to run once:
 
 }
 
 void loop() {
+  
   digitalWrite(LED, HIGH);
   if (pressed() == true) {
    toggle = !toggle;
-    
- }
-  digitalWrite(mp3_1, HIGH);
-  digitalWrite(mp3_2, HIGH);
+   Serial.println(toggle);
+  }
+ 
+  //digitalWrite(mp3_1, HIGH);
+  //digitalWrite(mp3_2, HIGH);
   Photo_Resist_Value = analogRead(Photo_Resist_Pin);
   Serial.println(Photo_Resist_Value);
   delay(30);
@@ -57,21 +60,23 @@ void loop() {
   if (toggle == 1){ 
     Serial.println("Pill Dispensed, music playing");
     myservo.write(servoangle);
-    digitalWrite(mp3_1, LOW);
-    
-    delay(20);
+    //digitalWrite(mp3_2, HIGH);
+    //digitalWrite(mp3_1, LOW);
+   
+
   }
   else {
     Serial.println("System off");
-    digitalWrite(mp3_1, HIGH);
-    digitalWrite(mp3_2, LOW);
+   // digitalWrite(mp3_1, HIGH);
+    delay(20);
+    //digitalWrite(mp3_2, LOW);
     myservo.write(servohome);
     delay(20);
     pill = 0;
   }
 
   
-
+  
 }
 
 bool pressed() {
