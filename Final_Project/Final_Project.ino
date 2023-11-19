@@ -13,6 +13,8 @@ bool toggle = 0;
 int LED = 12;
 int mp3_1 = 4;
 int mp3_2 = 5;
+int servoangle = 180;
+int servohome = 0;
 
 void setup() {
   myStepper.setSpeed(15);
@@ -47,13 +49,13 @@ void loop() {
     
   }
   if (toggle == 1){
-    int servoangle = 180;
     myservo.write(servoangle);
     digitalWrite(mp3_1, LOW);
     delay(20);
   }
   else {
     digitalWrite(mp3_2, LOW);
+    myservo.write(servohome);
   }
 
   
