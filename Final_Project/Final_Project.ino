@@ -34,7 +34,7 @@ void loop() {
   digitalWrite(LED, HIGH);
   if (pressed() == true) {
    toggle = !toggle;
-   pill = !pill; 
+    
  }
   digitalWrite(mp3_1, HIGH);
   digitalWrite(mp3_2, HIGH);
