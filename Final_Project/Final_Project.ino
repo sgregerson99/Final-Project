@@ -1,7 +1,7 @@
 #include <DS3231.h>
 #include <Servo.h> //Include servo library
-Servo myservo
-#include <Stepper.h>
+#include "Stepper.h"
+Servo myservo;
 int Photo_Resist_Pin = A0;
 const int buttonPin = 7;
 int Photo_Resist_Value;
@@ -47,7 +47,7 @@ void loop() {
     
   }
   if (toggle == 1){
-    servoangle = 180;
+    int servoangle = 180;
     myservo.write(servoangle);
     digitalWrite(mp3_1, LOW);
     delay(20);
@@ -71,5 +71,3 @@ bool pressed() {
       return false;
   }
 }
-
-
