@@ -1,0 +1,33 @@
+#include <RTClib.h>
+#include <Wire.h>
+#define buzzer 2
+
+RTC_DS3231 rtc;
+char t[32];
+
+void setup()
+{
+  pinMode(buzzer, OUTPUT);
+  Serial.begin(9600);
+  Wire.begin();
+  rtc.begin();
+  rtc.adjust(DateTime(F(__DATE__),F(__TIME__)));
+  //rtc.adjust(DateTime(2019, 1, 21, 5, 0, 0));
+}
+void loop()
+{
+  DateTime now = rtc.now();
+  sprintf(t, "%02d:%02d:%02d %02d/%02d/%02d", now.hour(), now.minute(), now.second(), now.day(), now.month(), now.year());  
+  Serial.print(F("Date/Time: "));
+  Serial.println(t);
+  Serial.println(now.hour());
+  delay(1000);
+  if (now.hour() == 16 && now.minute() == 9){
+    Serial.println(now.hour());
+    digitalWrite(buzzer, HIGH);
+  }
+  else {
+    digitalWrite(buzzer, LOW);
+  }
+}
+
