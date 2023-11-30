@@ -1,1 +1,48 @@
+int mp3_1 = 4;
+int mp3_2 = 5;
+int button = 2;
+bool toggle = 0;
+bool previousState = 1;
+bool currentState = 1;
 
+void setup() {
+  // put your setup code here, to run once:
+  pinMode(mp3_1, OUTPUT);
+  pinMode(mp3_2, OUTPUT);
+  pinMode(button, INPUT_PULLUP);  
+
+}
+
+void loop() {
+  digitalWrite(mp3_1, HIGH);
+  digitalWrite(mp3_2, HIGH);
+  
+  if (pressed() == true) {
+   toggle = !toggle;
+ }
+  if (toggle == 0){
+  digitalWrite(mp3_1, HIGH);
+   //Turns both off
+  digitalWrite(mp3_2, LOW);
+  delay(20);
+  
+  }
+  if (toggle == 1){
+  digitalWrite(mp3_1, LOW); //Turns pin 1 on
+  delay(20);
+  //digitalWrite(mp3_1, LOW); digitalWrite(mp3_2, HIGH);
+  }
+  
+}
+
+bool pressed() {
+     previousState = currentState;
+    currentState = digitalRead(button);
+  // read the state of the pushbutton value:
+    if (currentState == LOW && previousState == HIGH) {
+      delay(10);
+      return true;
+  } else {
+      return false;
+  }
+}
