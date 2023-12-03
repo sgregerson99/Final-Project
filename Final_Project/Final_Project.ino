@@ -17,8 +17,8 @@ Stepper myStepper(stepsPerRevolution, 8, 10, 9, 11);
 bool toggle = 0;
 int LED = 12;
 
-int servoangle = 180;
-int servohome = 0;
+int servoangle = 90;
+int servohome = 180;
 bool pill = 0;
 int TONE_PIN = 2;
 const byte IR_RECEIVE_PIN = 7;
@@ -28,7 +28,7 @@ void setup() {
   IrReceiver.begin(IR_RECEIVE_PIN, ENABLE_LED_FEEDBACK);
   Wire.begin();
   rtc.begin();
-  rtc.adjust(DateTime(F(__DATE__),F(__TIME__)));
+  rtc.adjust(DateTime(2023, 12, 3, 0, 0, 0));
   pinMode(TONE_PIN, OUTPUT);
   myStepper.setSpeed(15);
   pinMode(Photo_Resist_Pin, INPUT);
@@ -45,12 +45,11 @@ void loop() {
   if (IrReceiver.decode()) // Only perform an action if an IR signal is read by the reciever from the remote
    {
       ir_command = IrReceiver.decodedIRData.command;   // Decode IR remote button press signal data
-      Serial.println(ir_command);
       if (ir_command == 69){
-    Serial.print("Power pressed");
+    Serial.println("Power pressed");
     toggle = 0;
-    Serial.println("Toggle = ");
-    Serial.print(toggle);
+    Serial.print("Toggle = ");
+    Serial.println(toggle);
   }
 IrReceiver.resume();  
 }
@@ -64,14 +63,15 @@ IrReceiver.resume();
   
 
   digitalWrite(LED, HIGH);
-   if (now.hour() == 12 && now.minute() == 56 && now.second() == 0) {
+   if (now.hour() == 0 && now.minute() == 2 && now.second() == 0) {
     toggle = 1;
-    Serial.print("Toggle is");
+    Serial.print("Toggle is ");
     Serial.println(toggle);
    }
   
  
   Photo_Resist_Value = analogRead(Photo_Resist_Pin);
+  Serial.print("Photocell = ");
   Serial.println(Photo_Resist_Value);
   delay(30);
   if (Photo_Resist_Value < 500 ) { 
