@@ -1,6 +1,10 @@
-#include <DS3231.h>
 #include <Servo.h> //Include servo library
+#include <RTClib.h>
+#include <Wire.h>
 #include "Stepper.h"
+#include <IRremote.h>
+RTC_DS3231 rtc;
+char t[32];
 Servo myservo;
 int Photo_Resist_Pin = A0;
 const int buttonPin = 7;
@@ -16,14 +20,22 @@ int mp3_2 = 5;
 int servoangle = 180;
 int servohome = 0;
 bool pill = 0;
+int buzzer = 2;
+const byte IR_RECEIVE_PIN = 7;
+int ir_command;
 
 void setup() {
+  IrReceiver.begin(IR_RECEIVE_PIN, ENABLE_LED_FEEDBACK);
+  Wire.begin();
+  rtc.begin();
+  rtc.adjust(DateTime(F(__DATE__),F(__TIME__)));
+  pinMode(buzzer, OUTPUT);
   myStepper.setSpeed(15);
   pinMode(Photo_Resist_Pin, INPUT);
   Serial.begin(9600);
   myservo.attach(3);
-  //pinMode(mp3_1, OUTPUT);
-  //pinMode(mp3_2, OUTPUT);
+  pinMode(mp3_1, OUTPUT);
+  pinMode(mp3_2, OUTPUT);
   pinMode(LED, OUTPUT);
   pinMode(buttonPin, INPUT_PULLUP);
   myservo.write(servohome);
@@ -32,15 +44,30 @@ void setup() {
 }
 
 void loop() {
-  
+  if (IrReceiver.decode()) // Only perform an action if an IR signal is read by the reciever from the remote
+   {\
+      ir_command = IrReceiver.decodedIRData.command;   // Decode IR remote button press signal data
+      Serial.println(ir_command);
+  digitalWrite(mp3_1, HIGH);
+  digitalWrite(mp3_2, HIGH);
+  DateTime now = rtc.now();
+  sprintf(t, "%02d:%02d:%02d %02d/%02d/%02d", now.hour(), now.minute(), now.second(), now.day(), now.month(), now.year());  
+  Serial.print(F("Date/Time: "));
+  Serial.println(t);
+  Serial.println(now.hour());
+  delay(1000);
+
   digitalWrite(LED, HIGH);
-  if (pressed() == true) {
-   toggle = !toggle;
-   Serial.println(toggle);
+   if (now.hour() == 12 && now.minute() == 30) {
+    toggle = 1;
+    Serial.print("Toggle is");
+    Serial.println(toggle);
+   }
+  if (ir_command == 69){
+    Serial.print("Power pressed");
+    toggle = 0;
   }
  
-  //digitalWrite(mp3_1, HIGH);
-  //digitalWrite(mp3_2, HIGH);
   Photo_Resist_Value = analogRead(Photo_Resist_Pin);
   Serial.println(Photo_Resist_Value);
   delay(30);
@@ -60,33 +87,20 @@ void loop() {
   if (toggle == 1){ 
     Serial.println("Pill Dispensed, music playing");
     myservo.write(servoangle);
-    //digitalWrite(mp3_2, HIGH);
-    //digitalWrite(mp3_1, LOW);
+    digitalWrite(mp3_1, LOW); 
    
 
   }
-  else {
+   if (toggle == 0){
     Serial.println("System off");
-   // digitalWrite(mp3_1, HIGH);
-    delay(20);
-    //digitalWrite(mp3_2, LOW);
+    digitalWrite(mp3_1, HIGH);
+    digitalWrite(mp3_2, LOW);
     myservo.write(servohome);
     delay(20);
     pill = 0;
   }
 
   
-  
+IrReceiver.resume();  
 }
-
-bool pressed() {
-     previousState = currentState;
-    currentState = digitalRead(buttonPin);
-  // read the state of the pushbutton value:
-    if (currentState == LOW && previousState == HIGH) {
-      delay(10);
-      return true;
-  } else {
-      return false;
-  }
 }
