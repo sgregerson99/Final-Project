@@ -1,3 +1,6 @@
+#include <TimerFreeTone.h>
+#include <pitches.h>
+
 #include <Servo.h> //Include servo library
 #include <RTClib.h>
 #include <Wire.h>
@@ -11,16 +14,13 @@ const int buttonPin = 7;
 int Photo_Resist_Value;
 const int stepsPerRevolution = 2048;
 Stepper myStepper(stepsPerRevolution, 8, 10, 9, 11);
-bool previousState = 1;
-bool currentState = 1;
 bool toggle = 0;
 int LED = 12;
-int mp3_1 = 4;
-int mp3_2 = 5;
+
 int servoangle = 180;
 int servohome = 0;
 bool pill = 0;
-int buzzer = 2;
+int TONE_PIN = 2;
 const byte IR_RECEIVE_PIN = 7;
 int ir_command;
 
@@ -29,13 +29,11 @@ void setup() {
   Wire.begin();
   rtc.begin();
   rtc.adjust(DateTime(F(__DATE__),F(__TIME__)));
-  pinMode(buzzer, OUTPUT);
+  pinMode(TONE_PIN, OUTPUT);
   myStepper.setSpeed(15);
   pinMode(Photo_Resist_Pin, INPUT);
   Serial.begin(9600);
   myservo.attach(3);
-  pinMode(mp3_1, OUTPUT);
-  pinMode(mp3_2, OUTPUT);
   pinMode(LED, OUTPUT);
   pinMode(buttonPin, INPUT_PULLUP);
   myservo.write(servohome);
@@ -45,28 +43,33 @@ void setup() {
 
 void loop() {
   if (IrReceiver.decode()) // Only perform an action if an IR signal is read by the reciever from the remote
-   {\
+   {
       ir_command = IrReceiver.decodedIRData.command;   // Decode IR remote button press signal data
       Serial.println(ir_command);
-  digitalWrite(mp3_1, HIGH);
-  digitalWrite(mp3_2, HIGH);
+      if (ir_command == 69){
+    Serial.print("Power pressed");
+    toggle = 0;
+    Serial.println("Toggle = ");
+    Serial.print(toggle);
+  }
+IrReceiver.resume();  
+}
+  
   DateTime now = rtc.now();
   sprintf(t, "%02d:%02d:%02d %02d/%02d/%02d", now.hour(), now.minute(), now.second(), now.day(), now.month(), now.year());  
   Serial.print(F("Date/Time: "));
   Serial.println(t);
   Serial.println(now.hour());
   delay(1000);
+  
 
   digitalWrite(LED, HIGH);
-   if (now.hour() == 12 && now.minute() == 30) {
+   if (now.hour() == 12 && now.minute() == 56 && now.second() == 0) {
     toggle = 1;
     Serial.print("Toggle is");
     Serial.println(toggle);
    }
-  if (ir_command == 69){
-    Serial.print("Power pressed");
-    toggle = 0;
-  }
+  
  
   Photo_Resist_Value = analogRead(Photo_Resist_Pin);
   Serial.println(Photo_Resist_Value);
@@ -87,20 +90,53 @@ void loop() {
   if (toggle == 1){ 
     Serial.println("Pill Dispensed, music playing");
     myservo.write(servoangle);
-    digitalWrite(mp3_1, LOW); 
+    buzzer_alarm();
+    delay(500);
    
 
   }
    if (toggle == 0){
     Serial.println("System off");
-    digitalWrite(mp3_1, HIGH);
-    digitalWrite(mp3_2, LOW);
     myservo.write(servohome);
     delay(20);
     pill = 0;
   }
 
-  
-IrReceiver.resume();  
 }
+
+void buzzer_alarm(){
+  float tempo = 95; //beats per minute
+  int melody[] = {G4, FS4, E4, D4, E4, E4}; // notes in the melody (as note names or as frequencies)
+  float duration[] = {q, q, q, q, e, q}; // lengths as number of beats per note in melody
+   // Array items can be multiple bytes. sizeof()/sizeof(arr[0]) gives array length
+  int numNotes = sizeof(melody)/sizeof(melody[0]);
+  Serial.println("Playing Alarm");
+  play_song(tempo, melody, duration, numNotes); // Call provided function with all song details
 }
+
+
+// This function can play any song and provide Serial feedback
+// Tempo should be given as beats per minute
+// Melody should be given as an array of note frequences (or names if using pitches library)
+// Duration should be given as an array with number of beats for each melody note
+// numNotes is the number of notes in the song
+void play_song(float tempo, int melody[], float duration[], int numNotes) {
+  float beat_delay = (1/tempo) * 60 * 1000; //ms per beat
+  Serial.print(tempo);
+  Serial.print(" beats per minute -> ");
+  Serial.print(beat_delay);
+  Serial.println(" ms per beat");
+  for (int thisNote = 0; thisNote < numNotes; thisNote++) { // Loop through the notes in the array.
+    Serial.print(thisNote);
+    Serial.print(" ");
+    Serial.print(melody[thisNote]);
+    Serial.print(" Hz, ");
+    Serial.print(duration[thisNote]);
+    Serial.print(" beats, ");
+    Serial.print(duration[thisNote]*beat_delay);
+    Serial.println(" milliseconds");
+    TimerFreeTone(TONE_PIN, melody[thisNote], duration[thisNote]*beat_delay); // Play thisNote for duration
+    delay(50); // Short delay between notes.
+  }   
+}
+
