@@ -1,110 +1,104 @@
-#include <TimerFreeTone.h>
+#include <TimerFreeTone.h> //Include libraries to play songs with passive buzzer. From Arduino E-Textbook
 #include <pitches.h>
-
 #include <Servo.h> //Include servo library
-#include <RTClib.h>
-#include <Wire.h>
-#include "Stepper.h"
-#include <IRremote.h>
-RTC_DS3231 rtc;
-char t[32];
-Servo myservo;
-int Photo_Resist_Pin = A0;
-const int buttonPin = 7;
-int Photo_Resist_Value;
-const int stepsPerRevolution = 2048;
-Stepper myStepper(stepsPerRevolution, 8, 10, 9, 11);
-bool toggle = 0;
-int LED = 12;
+#include <RTClib.h> //Example code for time clock from https://circuitdigest.com/microcontroller-projects/interfacing-ds3231-rtc-with-arduino-and-diy-digital-clock
+#include <Wire.h> //Also from circuit digest
+#include "Stepper.h" //Include stepper library
+#include <IRremote.h> //Include IR library
 
-int servoangle = 90;
-int servohome = 180;
-bool pill = 0;
-int TONE_PIN = 2;
-const byte IR_RECEIVE_PIN = 7;
-int ir_command;
+RTC_DS3231 rtc; //Create real timeclock object
+char t[32];
+Servo myservo; //Create servo object
+int Photo_Resist_Pin = A0; //Set photoresistor pin
+int Photo_Resist_Value; //Initialize photoresistor value
+const int stepsPerRevolution = 2048; //Set up stepper motor full revolution
+Stepper myStepper(stepsPerRevolution, 8, 10, 9, 11); //Define stepper pins
+bool toggle = 0; //Initialize toggle variable
+int LED = 12; //Set LED pin
+
+int servoangle = 90; //Initialize servoangle variable
+int servohome = 180; //Create servohome variable to reset servo motor
+bool pill = 0; //Create pill variable to detect loaded pills
+int TONE_PIN = 2; //Set buzzer pin
+const byte IR_RECEIVE_PIN = 7; //Set IR pin
+int ir_command; //Create IR object
 
 void setup() {
+//Set components as outputs and inputs, begin serial monitor and real time clock
   IrReceiver.begin(IR_RECEIVE_PIN, ENABLE_LED_FEEDBACK);
   Wire.begin();
   rtc.begin();
-  rtc.adjust(DateTime(2023, 12, 3, 0, 0, 0));
   pinMode(TONE_PIN, OUTPUT);
-  myStepper.setSpeed(15);
+  myStepper.setSpeed(15); //Set stepper speed
   pinMode(Photo_Resist_Pin, INPUT);
   Serial.begin(9600);
   myservo.attach(3);
   pinMode(LED, OUTPUT);
-  pinMode(buttonPin, INPUT_PULLUP);
-  myservo.write(servohome);
-  // put your setup code here, to run once:
-
+  myservo.write(servohome); //Start servo motor at home angle 180
 }
 
 void loop() {
   if (IrReceiver.decode()) // Only perform an action if an IR signal is read by the reciever from the remote
    {
       ir_command = IrReceiver.decodedIRData.command;   // Decode IR remote button press signal data
-      if (ir_command == 69){
+      if (ir_command == 69){ //Means power button is being pressed
     Serial.println("Power pressed");
-    toggle = 0;
+    toggle = 0; //Set toggle to 0
     Serial.print("Toggle = ");
-    Serial.println(toggle);
+    Serial.println(toggle); //Print value of toggle for debugging
   }
-IrReceiver.resume();  
+IrReceiver.resume();  //Get IR sensor ready to read again
 }
   
-  DateTime now = rtc.now();
+  DateTime now = rtc.now(); //Read the date and time from the time clock
   sprintf(t, "%02d:%02d:%02d %02d/%02d/%02d", now.hour(), now.minute(), now.second(), now.day(), now.month(), now.year());  
   Serial.print(F("Date/Time: "));
-  Serial.println(t);
-  Serial.println(now.hour());
+  Serial.println(t); //Print date and time
+  Serial.println(now.hour()); //Print just the hour
   delay(1000);
   
 
-  digitalWrite(LED, HIGH);
-   if (now.hour() == 0 && now.minute() == 2 && now.second() == 0) {
-    toggle = 1;
+  digitalWrite(LED, HIGH); //Turn LED on for beam break sensor
+   if (now.hour() == 12 && now.minute() == 35 && now.second() == 0) { //If time is equal to alarm (12:35 pm)
+    toggle = 1; //Set toggle to 1
     Serial.print("Toggle is ");
     Serial.println(toggle);
    }
   
  
-  Photo_Resist_Value = analogRead(Photo_Resist_Pin);
+  Photo_Resist_Value = analogRead(Photo_Resist_Pin); //Read photoresistor
   Serial.print("Photocell = ");
   Serial.println(Photo_Resist_Value);
   delay(30);
-  if (Photo_Resist_Value < 500 ) { 
-    pill = 1;
+  if (Photo_Resist_Value < 500 ) { //If the beam from the LED is broken and photocell reads low
+    pill = 1; //Set pill to 1 meaning a pill is loaded
   }
-  if (pill == 0){
-    myStepper.step(stepsPerRevolution); 
-    delay(500);
-
-   //step one revolution in the other direction:
-    myStepper.step(-stepsPerRevolution);
+  if (pill == 0){ //If no pill is loaded pill is 0
+    myStepper.step(stepsPerRevolution); //step one revolution in one direction
+    delay(500); 
+    myStepper.step(-stepsPerRevolution); //step one revolution in other direction
     delay(500);
     Serial.println("No pill detected");
   }
   
-  if (toggle == 1){ 
+  if (toggle == 1){ //Clock has hit the desired time
     Serial.println("Pill Dispensed, music playing");
-    myservo.write(servoangle);
-    buzzer_alarm();
+    myservo.write(servoangle); //Turn servo to drop pill
+    buzzer_alarm(); //Set off buzzer to let person know a pill is ready
     delay(500);
    
 
   }
-   if (toggle == 0){
+   if (toggle == 0){ //IT is not the desired time
     Serial.println("System off");
-    myservo.write(servohome);
+    myservo.write(servohome); //Turn servo back
     delay(20);
-    pill = 0;
+    pill = 0; //Reset so system knows there is no pill loaded and restarts
   }
 
 }
 
-void buzzer_alarm(){
+void buzzer_alarm(){ //Function from the E-textbook 
   float tempo = 95; //beats per minute
   int melody[] = {G4, FS4, E4, D4, E4, E4}; // notes in the melody (as note names or as frequencies)
   float duration[] = {q, q, q, q, e, q}; // lengths as number of beats per note in melody
@@ -139,4 +133,3 @@ void play_song(float tempo, int melody[], float duration[], int numNotes) {
     delay(50); // Short delay between notes.
   }   
 }
-
